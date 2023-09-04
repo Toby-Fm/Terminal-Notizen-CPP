@@ -67,7 +67,7 @@ void loadTasksFromFile(std::vector<Task>& tasks, const std::string& filename) {
 
 int main() {
     std::vector<Task> tasks; // Erstellen einer Liste für Aufgaben
-    std::string filename = "../components/tasks.txt"; // Dateipfad für die Aufgabenliste/ Output Text File
+    std::string filename = "/Users/tobywichmann/Desktop/coden/C++/Terminal-Notizen-CPP/components/tasks.txt"; // Dateipfad für die Aufgabenliste/ Output Text File
     loadTasksFromFile(tasks, filename); // Laden der gespeicherten Aufgaben beim Programmstart
 
     char choice;
@@ -81,6 +81,7 @@ int main() {
         std::cin >> choice;
 
         switch (choice) {
+            //case 1: Aufgabe hinzufügen
             case '1': {
                 std::string input;
                 std::cout << "Möchten Sie eine Aufgabe hinzufügen? (Ja/Nein): ";
@@ -97,11 +98,13 @@ int main() {
                 }
                 break;
             }
+            //case 2 Aufgaben Anzeigen / Ändern / Status setzen
             case '2': {
                 showTasks(tasks); // Anzeigen der Aufgaben
 
                 std::string input;
-                std::cout << "\nIch möchte den Status einer Aufgabe ändern. (Ändern/Nein)" << std::endl;
+                std::cout << "\nIch möchte den Status einer Aufgabe ändern. (Ändern/Nein)";
+                std::cout << "\nIch möchte die Beschreibung einer Aufgabe ändern. (Ja/Nein)" << std::endl;
                 std::cout << "Ihre Auswahl: ";
                 std::cin >> input;
 
@@ -131,8 +134,28 @@ int main() {
                     std::cout << "\nWieder im Menu\n";
                     break; // Beenden der Schleife und zurück zum Hauptmenü
                 }
+                else if (input == "Ja" || input == "ja") { // Wenn der Benutzer "Ja" oder "ja" eingibt
+                    int index;
+                    std::cout << "Index der zu ändernden Aufgabe: ";
+                    std::cin >> index;
+
+                    if (index >= 1 && index <= static_cast<int>(tasks.size())) { // Überprüfen, ob der eingegebene Index gültig ist
+                        std::string newDescription;
+                        std::cout << "Neue Beschreibung: ";
+                        std::cin.ignore();
+                        std::getline(std::cin, newDescription); // Beschreibung einlesen
+
+                        // Ändern der Beschreibung der ausgewählten Aufgabe im Vektor tasks
+                        tasks[index - 1].description = newDescription;
+                        std::cout << "Beschreibung der Aufgabe " << index << " wurde geändert." << std::endl;
+                        saveTasksToFile(tasks, filename);
+                    } else {
+                        std::cout << "Ungültiger Index." << std::endl;
+                    }
+                }
                 break;
             }
+            //case '3': Löschen einer Aufgabe
             case '3': {
                 showTasks(tasks); // Anzeigen der Aufgaben vor dem Entfernen
                 if (!tasks.empty()) {
