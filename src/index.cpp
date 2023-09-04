@@ -14,7 +14,7 @@ void showTasks(const std::vector<Task>& tasks) {
     if (tasks.empty()) { // Wenn die Aufgabenliste leer ist
         std::cout << "+---------------------+\n";
         std::cout << "| Die Liste ist leer. |\n";
-        std::cout << "+---------------------+";
+        std::cout << "+---------------------+\n";
     } else {
         std::cout << "\n--- Aufgaben ---\n"; // Überschrift für die Aufgabenliste
         for (size_t i = 0; i < tasks.size(); ++i) { // Schleife durch die Aufgaben
@@ -67,7 +67,7 @@ void loadTasksFromFile(std::vector<Task>& tasks, const std::string& filename) {
 
 int main() {
     std::vector<Task> tasks; // Erstellen einer Liste für Aufgaben
-    std::string filename = "../components/tasks.txt"; // Dateipfad für die Aufgabenliste/ Output Text File
+    std::string filename = "/Users/tobywichmann/Desktop/coden/C++/Terminal-Notizen-CPP/components/tasks.txt"; // Dateipfad für die Aufgabenliste/ Output Text File
     loadTasksFromFile(tasks, filename); // Laden der gespeicherten Aufgaben beim Programmstart
 
     char choice;
@@ -100,7 +100,38 @@ int main() {
             }
             case '2': {
                 showTasks(tasks); // Anzeigen der Aufgaben
-                break;
+
+                std::string input;
+                std::cout << "\nIch möchte den Status einer Aufgabe ändern. (Ändern/Nein)" << std::endl;
+                std::cout << "Ihre Auswahl: ";
+                std::cin >> input;
+
+                if (input == "Ändern" || input == "ändern") { // Wenn der Benutzer "Ändern" oder "ändern" eingibt
+                    int index;
+                    std::cout << "Index der zu ändernden Aufgabe: ";
+                    std::cin >> index;
+
+                    if (index >= 1 && index <= static_cast<int>(tasks.size())) { // Überprüfen, ob der eingegebene Index gültig ist
+                        std::string newStatus;
+                        std::cout << "Neuer Status (1 für erledigt, 0 für nicht erledigt): ";
+                        std::cin >> newStatus;
+
+                        if (newStatus == "1" || newStatus == "0") { // Überprüfen, ob der eingegebene Status gültig ist
+                            // Ändern des Status der ausgewählten Aufgabe im Vektor tasks
+                            tasks[index - 1].completed = (newStatus == "1");
+                            std::cout << "Status der Aufgabe " << index << " wurde geändert." << std::endl;
+                        } else {
+                            std::cout << "Ungültiger Status. Der Status sollte 1 oder 0 sein." << std::endl;
+                        }
+                    } else {
+                        std::cout << "Ungültiger Index." << std::endl;
+                    }
+                } 
+                else if (input == "Nein" || input == "nein") { // Wenn der Benutzer "Nein" oder "nein" eingibt
+                    std::cout << "\nWieder im Menu\n";
+                    break; // Beenden der Schleife und zurück zum Hauptmenü
+                }
+                break; // Beenden des aktuellen Falls '2' im Hauptmenü
             }
             case '3': {
                 showTasks(tasks); // Anzeigen der Aufgaben vor dem Entfernen
