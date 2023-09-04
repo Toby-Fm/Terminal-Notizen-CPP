@@ -67,7 +67,7 @@ void loadTasksFromFile(std::vector<Task>& tasks, const std::string& filename) {
 
 int main() {
     std::vector<Task> tasks; // Erstellen einer Liste für Aufgaben
-    std::string filename = "/Users/tobywichmann/Desktop/coden/C++/Terminal-Notizen-CPP/components/tasks.txt"; // Dateipfad für die Aufgabenliste/ Output Text File
+    std::string filename = "/components/tasks.txt"; // Dateipfad für die Aufgabenliste/ Output Text File
     loadTasksFromFile(tasks, filename); // Laden der gespeicherten Aufgaben beim Programmstart
 
     char choice;
