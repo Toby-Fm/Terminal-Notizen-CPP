@@ -131,7 +131,7 @@ int main() {
                     std::cout << "\nWieder im Menu\n";
                     break; // Beenden der Schleife und zurück zum Hauptmenü
                 }
-                break; // Beenden des aktuellen Falls '2' im Hauptmenü
+                break;
             }
             case '3': {
                 showTasks(tasks); // Anzeigen der Aufgaben vor dem Entfernen
