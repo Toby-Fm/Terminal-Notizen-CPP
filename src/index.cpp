@@ -34,7 +34,7 @@ void saveTasksToFile(const std::vector<Task>& tasks, const std::string& filename
     std::ofstream file(filename); // Öffnen der Datei für den Schreibzugriff
     if (!file.is_open()) {
         std::cout << "+-----------------------------------------------------------------------------------+\n";
-        std::cerr << "| Fehler beim Speichern der Aufgaben. => '.txt' Datei konnte nicht gefunden werden. |" << std::endl; // Fehlermeldung bei Problemen mit dem Dateizugriff
+        std::cerr << "Fehler beim Speichern der Aufgaben. Datei konnte nicht geöffnet werden: " << filename << std::endl; // Fehlermeldung bei Problemen mit dem Dateizugriff
         std::cout << "+-----------------------------------------------------------------------------------+\n";
         return;
     }
@@ -67,11 +67,10 @@ void loadTasksFromFile(std::vector<Task>& tasks, const std::string& filename) {
 
 int main() {
     std::vector<Task> tasks; // Erstellen einer Liste für Aufgaben
-    std::string filename = "/components/tasks.txt"; // Dateipfad für die Aufgabenliste/ Output Text File
+    std::string filename = "../components/tasks.txt"; // Dateipfad für die Aufgabenliste/ Output Text File
     loadTasksFromFile(tasks, filename); // Laden der gespeicherten Aufgaben beim Programmstart
 
     char choice;
-
     do {
         std::cout << "\n--- ToDo-Liste ---\n"; // Hauptmenü für die ToDo-Liste
         std::cout << "1. Aufgabe hinzufügen\n";
@@ -120,6 +119,7 @@ int main() {
                             // Ändern des Status der ausgewählten Aufgabe im Vektor tasks
                             tasks[index - 1].completed = (newStatus == "1");
                             std::cout << "Status der Aufgabe " << index << " wurde geändert." << std::endl;
+                            saveTasksToFile(tasks, filename);
                         } else {
                             std::cout << "Ungültiger Status. Der Status sollte 1 oder 0 sein." << std::endl;
                         }
