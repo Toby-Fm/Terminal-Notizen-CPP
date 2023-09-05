@@ -1,4 +1,6 @@
 *.vscode
 *.DS_Store
 */index.dSYM
-*.txt
+*/components/*.txt
+test/
+*test/src/*.cpp
