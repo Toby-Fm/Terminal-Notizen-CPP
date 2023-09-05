@@ -9,7 +9,7 @@ das Dateisystem bietet folgende Funktionen:
 
 1. **Aufgaben hinzufügen:** Du kannst neue Aufgaben mit einer detaillierten Beschreibung erstellen.
 2. **Aufgaben anzeigen:** Alle vorhandenen Aufgaben werden übersichtlich aufgelistet, um einen klaren Überblick über deine To-Do-Liste zu erhalten.
-3. **Aufgaben bearbeiten:** Du kannst den Status einer Aufgabe ändern, um sie als erledigt oder nicht erledigt zu markieren. (Die Möglichkeit zur Änderung der Beschreibung wird in einem zukünftigen Update hinzugefügt.)
+3. **Aufgaben bearbeiten:** Du kannst den Status einer Aufgabe ändern, um sie als erledigt oder nicht erledigt zu markieren. Oder aber auch die Beschreibung ändern, falls etwas vergessen haben sollte.
 4. **Aufgaben löschen:** Aufgaben können einfach aus dem Dateisystem entfernt werden, wenn sie abgeschlossen sind oder nicht mehr benötigt werden.
 
 # Kompilieren des Codes
