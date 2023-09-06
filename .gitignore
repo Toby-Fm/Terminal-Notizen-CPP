@@ -2,5 +2,3 @@
 *.DS_Store
 */index.dSYM
 */components/*.txt
-test/
-*test/src/*.cpp
