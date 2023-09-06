@@ -16,6 +16,15 @@ das Dateisystem bietet folgende Funktionen:
 Um den Code auszuführen, musst du ihn zuerst kompilieren. Verwende dazu den C++-Compiler deiner Wahl.
 
 <pre>
-1. cd Pfad/zum/Verzeichnis
-2. g++ index.cpp -o index
+//Für Mac
+1. Terminal öffnen
+2. cd Pfad/zum/Verzeichnis
+3. g++ index.cpp -o index
+</pre>
+<pre>
+//Für Windows
+1. Terminal öffnen
+2. cd Pfad/zum/Verzeichnis
+3. g++ index.cpp -o index.exe
+4. index.exe
 </pre>
