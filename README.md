@@ -19,7 +19,7 @@ Um den Code auszuführen, musst du ihn zuerst kompilieren. Verwende dazu den C++
 //Für Mac
 1. Terminal öffnen
 2. cd Pfad/zum/Verzeichnis
-3. g++ index.cpp -o index
+3. g++ -std=c++17 index.cpp -o index
 </pre>
 <pre>
 //Für Windows
