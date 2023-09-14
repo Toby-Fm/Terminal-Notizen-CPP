@@ -2,6 +2,9 @@
 #include <fstream>
 #include <vector>
 #include <string>
+#include <filesystem>
+
+namespace fs = std::__fs::filesystem;
 
 // Definition einer Struktur namens "Task" zur Darstellung von Aufgaben
 struct Task {
@@ -66,20 +69,67 @@ void loadTasksFromFile(std::vector<Task>& tasks, const std::string& filename) {
     }
     file.close(); // Schließen der Datei nach dem Lesen
 }
+// Funktion zur Bearbeitung von Aufgaben
+void editTask(std::vector<Task>& tasks) {
+    showTasks(tasks); // Anzeigen der Aufgaben
+
+    int index;
+    std::cout << "Index der zu bearbeitenden Aufgabe: ";
+    std::cin >> index;
+
+    if (index >= 1 && index <= static_cast<int>(tasks.size())) { // Überprüfen, ob der eingegebene Index gültig ist
+        std::string input;
+        std::cout << "Möchten Sie die Beschreibung ändern? (Ja/Nein): ";
+        std::cin >> input;
+
+        if (input == "Ja" || input == "ja") {
+            std::string newDescription;
+            std::cout << "Neue Beschreibung: ";
+            std::cin.ignore();
+            std::getline(std::cin, newDescription); // Beschreibung einlesen
+            tasks[index - 1].description = newDescription; // Ändern der Beschreibung
+            std::cout << "\nBeschreibung der Aufgabe " << index << " wurde geändert." << std::endl;
+        }
+
+        std::cout << "Möchten Sie den Status ändern? (Ja/Nein): ";
+        std::cin >> input;
+
+        if (input == "Ja" || input == "ja") {
+            std::string newStatus;
+            std::cout << "Neuer Status (1 für erledigt, 0 für nicht erledigt): ";
+            std::cin >> newStatus;
+
+            if (newStatus == "1" || newStatus == "0") {
+                tasks[index - 1].completed = (newStatus == "1"); // Ändern des Status
+                std::cout << "\nStatus der Aufgabe " << index << " wurde geändert." << std::endl;
+            } else {
+                std::cout << "\nUngültiger Status. Der Status sollte 1 oder 0 sein." << std::endl;
+            }
+        }
+    } else {
+        std::cout << "Ungültiger Index." << std::endl;
+    }
+}
 
 int main() {
     std::vector<Task> tasks; // Erstellen einer Liste für Aufgaben
-    std::string filename = "/Users/tobywichmann/Desktop/coden/C++/Terminal-Notizen-CPP/test/components/tasks.txt"; // Dateipfad für die Aufgabenliste/ Output Text File
+    // Aktualisiere den Dateipfad entsprechend deines OneDrive-Ordners
+    std::string onedrivePath = "/Users/tobywichmann/Library/CloudStorage/OneDrive-Persönlich/Notizen/";
+    std::string filename = onedrivePath + ".txt"; // Dateipfad für die Aufgabenliste/Output Text File
+
     loadTasksFromFile(tasks, filename); // Laden der gespeicherten Aufgaben beim Programmstart
 
     char choice;
     do {
-        std::cout << "\n--- ToDo-Liste ---\n"; // Hauptmenü für die ToDo-Liste
+        std::cout << "\n--- Haupt Menu ---\n"; // Hauptmenü für die ToDo-Liste
         std::cout << "1. Aufgabe hinzufügen\n";
-        std::cout << "2. Aufgaben anzeigen\n";
+        std::cout << "2. Aufgaben anzeigen/ändern\n";
         std::cout << "3. Aufgabe entfernen\n";
-        std::cout << "4. Beenden\n";
-        std::cout << "Ihre Auswahl: ";
+        std::cout << "4. Ordner erstellen\n"; // Option zum Ordner erstellen hinzugefügt
+        std::cout << "5. Ordner anzeigen\n";
+        std::cout << "7. In Ordner navigieren\n";
+        std::cout << "9. Beenden\n";
+        std::cout << "\n" << "Ihre Auswahl: ";
         std::cin >> choice;
 
         switch (choice) {
@@ -102,58 +152,49 @@ int main() {
             }
             //case 2 Aufgaben Anzeigen / Ändern / Status setzen
             case '2': {
-                showTasks(tasks); // Anzeigen der Aufgaben
-
                 std::string input;
-                std::cout << "\nIch möchte den Status einer Aufgabe ändern. (Ändern/Nein)";
-                std::cout << "\nIch möchte die Beschreibung einer Aufgabe ändern. (Ja/Nein)" << std::endl;
-                std::cout << "Ihre Auswahl: ";
+                std::cout << "Bitte geben Sie den Namen der Datei ein, die Sie anzeigen/bearbeiten möchten: ";
                 std::cin >> input;
 
-                if (input == "Ändern" || input == "ändern") { // Wenn der Benutzer "Ändern" oder "ändern" eingibt
-                    int index;
-                    std::cout << "Index der zu ändernden Aufgabe: ";
-                    std::cin >> index;
+                std::string filename = onedrivePath + input;
 
-                    if (index >= 1 && index <= static_cast<int>(tasks.size())) { // Überprüfen, ob der eingegebene Index gültig ist
-                        std::string newStatus;
-                        std::cout << "Neuer Status (1 für erledigt, 0 für nicht erledigt): ";
-                        std::cin >> newStatus;
+                // Überprüfen, ob die Datei existiert, bevor wir sie öffnen
+                std::ifstream file(filename);
+                if (file.is_open()) {
+                    file.close(); // Datei schließen
 
-                        if (newStatus == "1" || newStatus == "0") { // Überprüfen, ob der eingegebene Status gültig ist
-                            // Ändern des Status der ausgewählten Aufgabe im Vektor tasks
-                            tasks[index - 1].completed = (newStatus == "1");
-                            std::cout << "\nStatus der Aufgabe " << index << " wurde geändert." << std::endl;
-                            saveTasksToFile(tasks, filename);
-                        } else {
-                            std::cout << "\nUngültiger Status. Der Status sollte 1 oder 0 sein." << std::endl;
+                    // Datei existiert, also können wir Aufgaben laden
+                    loadTasksFromFile(tasks, filename); // Laden der Aufgaben aus der Datei
+                    showTasks(tasks); // Anzeigen der Aufgaben aus der Datei
+
+                    // Menü für Bearbeitung oder Hinzufügen
+                    char editOrAdd;
+                    std::cout << "Möchten Sie Aufgaben bearbeiten (B) oder eine Aufgabe hinzufügen (H)? ";
+                    std::cin >> editOrAdd;
+                    if (editOrAdd == 'B' || editOrAdd == 'b') {
+                        editTask(tasks); // Bearbeiten von Aufgaben aus der Datei
+                    } else if (editOrAdd == 'H' || editOrAdd == 'h') {
+                        std::string input;
+                        std::cout << "Möchten Sie eine Aufgabe hinzufügen? (Ja/Nein): ";
+                        std::cin >> input;
+                        if (input == "Ja" || input == "ja") {
+                            Task task;
+                            std::cout << "Beschreibung der Aufgabe: ";
+                            std::cin.ignore();
+                            std::getline(std::cin, task.description); // Eingabe der Aufgabenbeschreibung
+                            task.completed = false;
+                            tasks.push_back(task); // Hinzufügen der neuen Aufgabe zur Liste
+                            std::cout << "Aufgabe hinzugefügt.\n";
+                            saveTasksToFile(tasks, filename); // Speichern der aktualisierten Liste in die Datei
                         }
+                        break;
                     } else {
-                        std::cout << "Ungültiger Index." << std::endl;
+                        std::cout << "Ungültige Auswahl." << std::endl;
                     }
-                } 
-                else if (input == "Nein" || input == "nein") { // Wenn der Benutzer "Nein" oder "nein" eingibt
-                    std::cout << "\nWieder im Menu\n";
-                    break; // Beenden der Schleife und zurück zum Hauptmenü
-                }
-                else if (input == "Ja" || input == "ja") { // Wenn der Benutzer "Ja" oder "ja" eingibt
-                    int index;
-                    std::cout << "Index der zu ändernden Aufgabe: ";
-                    std::cin >> index;
 
-                    if (index >= 1 && index <= static_cast<int>(tasks.size())) { // Überprüfen, ob der eingegebene Index gültig ist
-                        std::string newDescription;
-                        std::cout << "Neue Beschreibung: ";
-                        std::cin.ignore();
-                        std::getline(std::cin, newDescription); // Beschreibung einlesen
-
-                        // Ändern der Beschreibung der ausgewählten Aufgabe im Vektor tasks
-                        tasks[index - 1].description = newDescription;
-                        std::cout << "\nBeschreibung der Aufgabe " << index << " wurde geändert." << std::endl;
-                        saveTasksToFile(tasks, filename);
-                    } else {
-                        std::cout << "Ungültiger Index." << std::endl;
-                    }
+                    saveTasksToFile(tasks, filename); // Speichern der aktualisierten Liste in die Datei
+                } else {
+                    std::cout << "Die Datei existiert nicht oder konnte nicht geöffnet werden." << std::endl;
                 }
                 break;
             }
@@ -175,15 +216,65 @@ int main() {
                 break;
             }
             case '4': {
-                std::cout << "Programm wird beendet.\n";
+                std::string folderName;
+                std::cout << "Name des neuen Ordners: ";
+                std::cin >> folderName;
+
+                std::string folderPath = onedrivePath + folderName;
+                if (fs::create_directory(folderPath)) {
+                    std::cout << "Ordner erstellt: " << folderPath << std::endl;
+                } else {
+                    std::cerr << "Fehler beim Erstellen des Ordners." << std::endl;
+                }
                 break;
             }
-            default: {
-                std::cout << "Ungültige Auswahl. Bitte erneut versuchen.\n"; // Fehlermeldung bei ungültiger Auswahl
+            case '5': {
+                std::cout << "\n" << "Inhalt des Ordners " << onedrivePath << ":\n\n";
+                for (const auto& entry : fs::directory_iterator(onedrivePath)) {
+                    if (entry.is_directory()) {
+                        std::cout << "[Verzeichnis] " << entry.path().filename() << "\n";
+                    } else {
+                        std::cout << "[Datei] " << entry.path().filename() << "\n";
+                    }
+                }
+                break;
+            }
+            case '7': {
+                std::string input;
+                std::cout << "Bitte geben Sie den Namen des Ordners ein, den Sie öffnen möchten: ";
+                std::cin >> input;
+
+                std::string folderPath = onedrivePath + input;
+
+                // Hier kannst du die Logik zum Navigieren in den Ordner hinzufügen
+                // Dies kann das Auflisten von Dateien und Unterordnern im ausgewählten Ordner usw. beinhalten
+
+                // Beispiel:
+                std::cout << "In den Ordner '" << folderPath << "' navigiert." << std::endl;
+
+                // Nachdem du in den Ordner navigiert bist, kannst du die .txt Datei erstellen
+                std::string txtFileName;
+                std::cout << "Bitte geben Sie den Namen der .txt Datei ein, die Sie erstellen möchten: ";
+                std::cin >> txtFileName;
+
+                std::string txtFilePath = folderPath + "/" + txtFileName + ".txt"; // Pfad für die .txt Datei im Ordner
+
+                // Hier kannst du die Logik zum Erstellen der .txt Datei im ausgewählten Ordner hinzufügen
+                // Dies kann das Erstellen einer leeren .txt Datei usw. beinhalten
+
+                // Beispiel: Erstellung einer leeren .txt Datei
+                std::ofstream txtFile(txtFilePath);
+                if (txtFile.is_open()) {
+                    txtFile.close();
+                    std::cout << "Die Datei '" << txtFileName << ".txt' wurde im Ordner '" << folderPath << "' erstellt." << std::endl;
+                } else {
+                    std::cerr << "Fehler beim Erstellen der Datei." << std::endl;
+                }
+
                 break;
             }
         }
-    } while (choice != '4'); // Schleife läuft, bis die Auswahl '4' (Beenden) getroffen wird
+    } while (choice != '6'); // Schleife läuft, bis die Auswahl '4' (Beenden) getroffen wird
 
     return 0;
 }
