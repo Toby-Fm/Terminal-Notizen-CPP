@@ -246,23 +246,15 @@ int main() {
 
                 std::string folderPath = onedrivePath + input;
 
-                // Hier kannst du die Logik zum Navigieren in den Ordner hinzufügen
-                // Dies kann das Auflisten von Dateien und Unterordnern im ausgewählten Ordner usw. beinhalten
-
-                // Beispiel:
                 std::cout << "In den Ordner '" << folderPath << "' navigiert." << std::endl;
-
-                // Nachdem du in den Ordner navigiert bist, kannst du die .txt Datei erstellen
+                
                 std::string txtFileName;
                 std::cout << "Bitte geben Sie den Namen der .txt Datei ein, die Sie erstellen möchten: ";
                 std::cin >> txtFileName;
 
                 std::string txtFilePath = folderPath + "/" + txtFileName + ".txt"; // Pfad für die .txt Datei im Ordner
 
-                // Hier kannst du die Logik zum Erstellen der .txt Datei im ausgewählten Ordner hinzufügen
-                // Dies kann das Erstellen einer leeren .txt Datei usw. beinhalten
-
-                // Beispiel: Erstellung einer leeren .txt Datei
+                //Erstellung einer leeren .txt Datei
                 std::ofstream txtFile(txtFilePath);
                 if (txtFile.is_open()) {
                     txtFile.close();
