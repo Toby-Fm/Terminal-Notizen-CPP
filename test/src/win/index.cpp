@@ -143,12 +143,13 @@ void processTasksInDirectory(const std::string& directoryPath) {
                 do {
                     std::cout << "\n--- Auswahl ---\n";
                     std::cout << "0. Zurück ins Hauptmenu\n";
-                    std::cout << "1. In Ordner navigieren\n";
-                    std::cout << "2. Ordner erstellen\n";
-                    std::cout << "3. Ordner oder Datei löschen\n";
-                    std::cout << "4. Text-Datei öffnen/bearbeiten\n";
-                    std::cout << "5. Text-Datei erstellen\n";
-                    std::cout << "6. Text-Datei löschen\n";
+                    std::cout << "1. Verzeichnis Anzeigen\n"; // Zeigt alle Ordner und Dateien aus dem Verzeichnis
+                    std::cout << "2. In Ordner navigieren\n";
+                    std::cout << "3. Ordner erstellen\n";
+                    std::cout << "4. Ordner oder Datei löschen\n";
+                    std::cout << "5. Text-Datei öffnen/bearbeiten\n";
+                    std::cout << "6. Text-Datei erstellen\n";
+                    /*std::cout << "7. Text-Datei löschen\n";*/
                     std::cout << "\n" << "Ihre Auswahl: ";
                     std::cin >> newChoice;
 
@@ -156,6 +157,16 @@ void processTasksInDirectory(const std::string& directoryPath) {
                         // 0 => Geht zurück ins Hauptmenu.
                         // 1 => Ruft den angegebenen Ordner auf und Navigiert rein.
                         case '1': {
+                            std::cout << "\n" << "Inhalt des Ordners: \n" << directoryPath << "\n\n"; // Zeigt den Inhalt des Ordners an. + Das Verzeichnis
+                            for (const auto& entry : fs::directory_iterator(directoryPath)) {
+                                if (entry.is_directory()) {
+                                    std::cout << "[Ordner]: " << entry.path().filename() << "\n"; // Schreibt vor einem Ordner "Ordner".
+                                } else {
+                                    std::cout << "[Datei]: " << entry.path().filename() << "\n"; // Schreibt vor einer Datei "Datei".
+                                }
+                            }
+                        }
+                        case '2': {
                             std::string input;
                             std::cout << "Bitte geben Sie den Namen des Ordners ein, den Sie öffnen möchten: ";
                             std::cin >> input;
@@ -167,7 +178,7 @@ void processTasksInDirectory(const std::string& directoryPath) {
                             processTasksInDirectory(folderPath);
                             break;
                         }
-                        case '2': {
+                        case '3': {
                             std::string folderName;
                             std::cout << "Name des neuen Ordners (Leerzeichen müssen mit '_' markiert werden): ";
                             std::cin >> folderName;
@@ -183,7 +194,7 @@ void processTasksInDirectory(const std::string& directoryPath) {
                             }
                             break;
                         }
-                        case '3': {
+                        case '4': {
                             if (!tasks.empty()) {
                                 std::cout << "+-----------------------------------------------------------------------------------------+ \n";
                                 std::cout << "| Wenn eine Datei entfernt werden soll, muss der ganze Name angegeben werden. => entf.txt | \n";
@@ -211,7 +222,7 @@ void processTasksInDirectory(const std::string& directoryPath) {
                             }
                             break;
                         }
-                        case '4': {
+                        case '5': {
                             std::string input;
                             std::cout << "Bitte geben Sie den Namen der Datei ein, die Sie anzeigen/bearbeiten möchten: ";
                             std::cin >> input;
@@ -258,12 +269,12 @@ void processTasksInDirectory(const std::string& directoryPath) {
                             }
                             break;
                         }
-                        case '5': {
+                        case '6': {
                             std::string input;
                             std::cout << "Bitte geben Sie den Namen der neuen Textdatei ein: ";
                             std::cin >> input;
 
-                            std::string newFilename = directoryPath + "/" + input;
+                            std::string newFilename = directoryPath + "/" + input + ".txt";
 
                             // Überprüfen, ob die Datei bereits existiert
                             if (fs::exists(newFilename)) {
@@ -279,7 +290,7 @@ void processTasksInDirectory(const std::string& directoryPath) {
                             }
                             break;
                         }
-                        case '6': {
+                        /*case '7': {
                             std::string input;
                             std::cout << "Bitte geben Sie den Namen der Textdatei ein, die Sie löschen möchten: ";
                             std::cin >> input;
@@ -294,7 +305,7 @@ void processTasksInDirectory(const std::string& directoryPath) {
                                 std::cerr << "Die Datei existiert nicht oder konnte nicht gelöscht werden." << std::endl;
                             }
                             break;
-                        }
+                        }*/
                     }
                 } while (newChoice != '0'); // Schleife läuft, bis die Auswahl "0" (Zurück) getroffen wird.
                 break;
