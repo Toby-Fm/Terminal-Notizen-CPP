@@ -2,11 +2,14 @@
 #include <fstream>
 #include <vector>
 #include <string>
+#include <filesystem>
+
+namespace fs = std::__fs::filesystem;
 
 // Definition einer Struktur namens "Task" zur Darstellung von Aufgaben
 struct Task {
-    std::string description; // Beschreibung der Aufgabe
-    bool completed; // Gibt an, ob die Aufgabe abgeschlossen ist (true) oder nicht (false)
+    std::string description;
+    bool completed;
 };
 
 // Funktion zur Anzeige der Aufgaben in der Liste
@@ -31,21 +34,6 @@ void showTasks(const std::vector<Task>& tasks) {
     }
 }
 
-// Funktion zum Speichern der Aufgaben in eine Datei
-void saveTasksToFile(const std::vector<Task>& tasks, const std::string& filename) {
-    std::ofstream file(filename); // Öffnen der Datei für den Schreibzugriff
-    if (!file.is_open()) {
-        std::cout << "+-----------------------------------------------------------------------------------+\n";
-        std::cerr << "Fehler beim Speichern der Aufgaben. Datei konnte nicht geöffnet werden: " << filename << std::endl; // Fehlermeldung bei Problemen mit dem Dateizugriff
-        std::cout << "+-----------------------------------------------------------------------------------+\n";
-        return;
-    }
-    for (const Task& task : tasks) {
-        file << task.description << "," << (task.completed ? "1" : "0") << "\n"; // Schreiben der Aufgaben in die Datei
-    }
-    file.close(); // Schließen der Datei nach dem Schreiben
-}
-
 // Funktion zum Laden der Aufgaben aus einer Datei
 void loadTasksFromFile(std::vector<Task>& tasks, const std::string& filename) {
     std::ifstream file(filename); // Öffnen der Datei für den Lesezugriff
@@ -67,123 +55,270 @@ void loadTasksFromFile(std::vector<Task>& tasks, const std::string& filename) {
     file.close(); // Schließen der Datei nach dem Lesen
 }
 
-int main() {
+// Funktion zur Bearbeitung von Aufgaben
+void editTask(std::vector<Task>& tasks) {
+    showTasks(tasks); // Anzeigen der Aufgaben
+
+    int index;
+    std::cout << "Index der zu bearbeitenden Aufgabe: ";
+    std::cin >> index;
+
+    if (index >= 1 && index <= static_cast<int>(tasks.size())) { // Überprüfen, ob der eingegebene Index gültig ist
+        std::string input;
+        std::cout << "Möchten Sie die Beschreibung ändern? (Ja/Nein): ";
+        std::cin >> input;
+
+        if (input == "Ja" || input == "ja") {
+            std::string newDescription;
+            std::cout << "Neue Beschreibung: ";
+            std::cin.ignore();
+            std::getline(std::cin, newDescription); // Beschreibung einlesen
+            tasks[index - 1].description = newDescription; // Ändern der Beschreibung
+            std::cout << "\nBeschreibung der Aufgabe " << index << " wurde geändert." << std::endl;
+        }
+
+        std::cout << "Möchten Sie den Status ändern? (Ja/Nein): ";
+        std::cin >> input;
+
+        if (input == "Ja" || input == "ja") {
+            std::string newStatus;
+            std::cout << "Neuer Status (1 für erledigt, 0 für nicht erledigt): ";
+            std::cin >> newStatus;
+
+            if (newStatus == "1" || newStatus == "0") {
+                tasks[index - 1].completed = (newStatus == "1"); // Ändern des Status
+                std::cout << "\nStatus der Aufgabe " << index << " wurde geändert." << std::endl;
+            } else {
+                std::cout << "\nUngültiger Status. Der Status sollte 1 oder 0 sein." << std::endl;
+            }
+        }
+    } else {
+        std::cout << "Ungültiger Index." << std::endl;
+    }
+}
+
+// Funktion zum Speichern der Aufgaben in eine Datei
+void saveTasksToFile(const std::vector<Task>& tasks, const std::string& filename) {
+    std::ofstream file(filename); // Öffnen der Datei für den Schreibzugriff
+    if (!file.is_open()) {
+        std::cout << "+-----------------------------------------------------------------------------------+\n";
+        std::cerr << "Fehler beim Speichern der Aufgaben. Datei konnte nicht geöffnet werden: " << filename << std::endl; // Fehlermeldung bei Problemen mit dem Dateizugriff
+        std::cout << "+-----------------------------------------------------------------------------------+\n";
+        return;
+    }
+    for (const Task& task : tasks) {
+        file << task.description << "," << (task.completed ? "1" : "0") << "\n"; // Schreiben der Aufgaben in die Datei
+    }
+    file.close(); // Schließen der Datei nach dem Schreiben
+}
+
+// Funktion zur Verarbeitung von Aufgaben in einem Verzeichnis
+void processTasksInDirectory(const std::string& directoryPath) {
     std::vector<Task> tasks; // Erstellen einer Liste für Aufgaben
-    std::string filename = "/Users/tobywichmann/Library/CloudStorage/OneDrive-Persönlich/notizbuch.txt"; // Dateipfad für die Aufgabenliste/ Output Text File
+    std::string filename = directoryPath + "/tasks.txt"; // Dateipfad für die Aufgabenliste/Output Text File
+
     loadTasksFromFile(tasks, filename); // Laden der gespeicherten Aufgaben beim Programmstart
 
     char choice;
     do {
-        std::cout << "\n--- ToDo-Liste ---\n"; // Hauptmenü für die ToDo-Liste
-        std::cout << "1. Aufgabe hinzufügen\n";
-        std::cout << "2. Aufgaben anzeigen\n";
-        std::cout << "3. Aufgabe entfernen\n";
-        std::cout << "4. Beenden\n";
-        std::cout << "Ihre Auswahl: ";
+        std::cout << "\n--- Hauptmenu ---\n";
+        std::cout << "0. Beenden\n"; // Beendet das Programm
+        std::cout << "1. Verzeichnis Anzeigen\n"; // Zeigt alle Ordner und Dateien aus dem Verzeichnis
+        std::cout << "\n" << "Ihre Auswahl: ";
         std::cin >> choice;
 
         switch (choice) {
-            //case 1: Aufgabe hinzufügen
+            // 0 => Beendet das Programm.
+            // 1 => Zeigt das Verzeichnis des Main Ordners an.
             case '1': {
-                std::string input;
-                std::cout << "Möchten Sie eine Aufgabe hinzufügen? (Ja/Nein): ";
-                std::cin >> input;
-                if (input == "Ja" || input == "ja") {
-                    Task task;
-                    std::cout << "Beschreibung der Aufgabe: ";
-                    std::cin.ignore();
-                    std::getline(std::cin, task.description); // Eingabe der Aufgabenbeschreibung
-                    task.completed = false;
-                    tasks.push_back(task); // Hinzufügen der neuen Aufgabe zur Liste
-                    std::cout << "Aufgabe hinzugefügt.\n";
-                    saveTasksToFile(tasks, filename); // Speichern der aktualisierten Liste in die Datei
+                std::cout << "\n" << "Inhalt des Ordners: \n" << directoryPath << "\n\n"; // Zeigt den Inhalt des Ordners an. + Das Verzeichnis
+                for (const auto& entry : fs::directory_iterator(directoryPath)) {
+                    if (entry.is_directory()) {
+                        std::cout << "[Ordner]: " << entry.path().filename() << "\n"; // Schreibt vor einem Ordner "Ordner".
+                    } else {
+                        std::cout << "[Datei]: " << entry.path().filename() << "\n"; // Schreibt vor einer Datei "Datei".
+                    }
                 }
-                break;
-            }
-            //case 2 Aufgaben Anzeigen / Ändern / Status setzen
-            case '2': {
-                showTasks(tasks); // Anzeigen der Aufgaben
+                char newChoice;
+                do {
+                    std::cout << "\n--- Auswahl ---\n";
+                    std::cout << "0. Zurück ins Hauptmenu\n";
+                    std::cout << "1. Verzeichnis Anzeigen\n"; // Zeigt alle Ordner und Dateien aus dem Verzeichnis
+                    std::cout << "2. In Ordner navigieren\n";
+                    std::cout << "3. Ordner erstellen\n";
+                    std::cout << "4. Ordner oder Datei löschen\n";
+                    std::cout << "5. Text-Datei öffnen/bearbeiten\n";
+                    std::cout << "6. Text-Datei erstellen\n";
+                    /*std::cout << "7. Text-Datei löschen\n";*/
+                    std::cout << "\n" << "Ihre Auswahl: ";
+                    std::cin >> newChoice;
 
-                std::string input;
-                std::cout << "\nIch möchte den Status einer Aufgabe ändern. (Ändern/Nein)";
-                std::cout << "\nIch möchte die Beschreibung einer Aufgabe ändern. (Ja/Nein)" << std::endl;
-                std::cout << "Ihre Auswahl: ";
-                std::cin >> input;
-
-                if (input == "Ändern" || input == "ändern") { // Wenn der Benutzer "Ändern" oder "ändern" eingibt
-                    int index;
-                    std::cout << "Index der zu ändernden Aufgabe: ";
-                    std::cin >> index;
-
-                    if (index >= 1 && index <= static_cast<int>(tasks.size())) { // Überprüfen, ob der eingegebene Index gültig ist
-                        std::string newStatus;
-                        std::cout << "Neuer Status (1 für erledigt, 0 für nicht erledigt): ";
-                        std::cin >> newStatus;
-
-                        if (newStatus == "1" || newStatus == "0") { // Überprüfen, ob der eingegebene Status gültig ist
-                            // Ändern des Status der ausgewählten Aufgabe im Vektor tasks
-                            tasks[index - 1].completed = (newStatus == "1");
-                            std::cout << "\nStatus der Aufgabe " << index << " wurde geändert." << std::endl;
-                            saveTasksToFile(tasks, filename);
-                        } else {
-                            std::cout << "\nUngültiger Status. Der Status sollte 1 oder 0 sein." << std::endl;
+                    switch (newChoice) {
+                        // 0 => Geht zurück ins Hauptmenu.
+                        // 1 => Ruft den angegebenen Ordner auf und Navigiert rein.
+                        case '1': {
+                            std::cout << "\n" << "Inhalt des Ordners: \n" << directoryPath << "\n\n"; // Zeigt den Inhalt des Ordners an. + Das Verzeichnis
+                            for (const auto& entry : fs::directory_iterator(directoryPath)) {
+                                if (entry.is_directory()) {
+                                    std::cout << "[Ordner]: " << entry.path().filename() << "\n"; // Schreibt vor einem Ordner "Ordner".
+                                } else {
+                                    std::cout << "[Datei]: " << entry.path().filename() << "\n"; // Schreibt vor einer Datei "Datei".
+                                }
+                            }
                         }
-                    } else {
-                        std::cout << "Ungültiger Index." << std::endl;
-                    }
-                } 
-                else if (input == "Nein" || input == "nein") { // Wenn der Benutzer "Nein" oder "nein" eingibt
-                    std::cout << "\nWieder im Menu\n";
-                    break; // Beenden der Schleife und zurück zum Hauptmenü
-                }
-                else if (input == "Ja" || input == "ja") { // Wenn der Benutzer "Ja" oder "ja" eingibt
-                    int index;
-                    std::cout << "Index der zu ändernden Aufgabe: ";
-                    std::cin >> index;
+                        case '2': {
+                            std::string input;
+                            std::cout << "Bitte geben Sie den Namen des Ordners ein, den Sie öffnen möchten: ";
+                            std::cin >> input;
 
-                    if (index >= 1 && index <= static_cast<int>(tasks.size())) { // Überprüfen, ob der eingegebene Index gültig ist
-                        std::string newDescription;
-                        std::cout << "Neue Beschreibung: ";
-                        std::cin.ignore();
-                        std::getline(std::cin, newDescription); // Beschreibung einlesen
+                            std::string folderPath = directoryPath + "/" + input;
+                            std::cout << "In den Ordner '" << folderPath << "' navigiert." << std::endl;
 
-                        // Ändern der Beschreibung der ausgewählten Aufgabe im Vektor tasks
-                        tasks[index - 1].description = newDescription;
-                        std::cout << "\nBeschreibung der Aufgabe " << index << " wurde geändert." << std::endl;
-                        saveTasksToFile(tasks, filename);
-                    } else {
-                        std::cout << "Ungültiger Index." << std::endl;
+                            // Rekursiver Aufruf der Funktion für das Unterverzeichnis
+                            processTasksInDirectory(folderPath);
+                            break;
+                        }
+                        case '3': {
+                            std::string folderName;
+                            std::cout << "Name des neuen Ordners (Leerzeichen müssen mit '_' markiert werden): ";
+                            std::cin >> folderName;
+
+                            std::string folderPath = directoryPath + "/" + folderName;
+                            if (fs::create_directory(folderPath)) {
+                                // Ordner konnte erstellt werden.
+                                std::cout << "\nOrdner wurde erstellt. \n" 
+                                          << "Name des Ordners: " << folderName << "\n" 
+                                          << "Verzeichnis: " << folderPath << std::endl;
+                            } else {
+                                std::cerr << "Fehler beim Erstellen des Ordners." << std::endl;
+                            }
+                            break;
+                        }
+                        case '4': {
+                            if (!tasks.empty()) {
+                                std::cout << "+-----------------------------------------------------------------------------------------+ \n";
+                                std::cout << "| Wenn eine Datei entfernt werden soll, muss der ganze Name angegeben werden. => entf.txt | \n";
+                                std::cout << "+-----------------------------------------------------------------------------------------+ \n";
+
+                                std::string itemName;
+                                std::cout << "Welcher Ordner oder Datei soll entfernt werden?: ";
+                                std::cin >> itemName;
+                                bool found = false;
+
+                                for (const auto& entry : fs::directory_iterator(directoryPath)) {
+                                    if (entry.is_directory() || entry.is_regular_file()) {
+                                        std::string entryName = entry.path().filename().string();
+                                        if (entryName == itemName) {
+                                            fs::remove(entry); // Löschen des Ordners oder der Datei
+                                            std::cout << "Element '" << itemName << "' entfernt.\n";
+                                            found = true;
+                                            break;
+                                        }
+                                    }
+                                }
+                                if (!found) {
+                                    std::cerr << "Element '" << itemName << "' wurde nicht gefunden oder konnte nicht entfernt werden.\n";
+                                }
+                            }
+                            break;
+                        }
+                        case '5': {
+                            std::string input;
+                            std::cout << "Bitte geben Sie den Namen der Datei ein, die Sie anzeigen/bearbeiten möchten: ";
+                            std::cin >> input;
+
+                            std::string filename = directoryPath + "/" + input;
+
+                            // Überprüfen, ob die Datei existiert, bevor wir sie öffnen
+                            std::ifstream file(filename);
+                            if (file.is_open()) {
+                                file.close(); // Datei schließen
+
+                                // Datei existiert, also können wir Aufgaben laden
+                                loadTasksFromFile(tasks, filename); // Laden der Aufgaben aus der Datei
+                                showTasks(tasks); // Anzeigen der Aufgaben aus der Datei
+
+                                // Menü für Bearbeitung oder Hinzufügen
+                                char editOrAdd;
+                                std::cout << "Möchten Sie Aufgaben bearbeiten (B) oder eine Aufgabe hinzufügen (H)? ";
+                                std::cin >> editOrAdd;
+                                if (editOrAdd == 'B' || editOrAdd == 'b') {
+                                    editTask(tasks); // Bearbeiten von Aufgaben aus der Datei
+                                } else if (editOrAdd == 'H' || editOrAdd == 'h') {
+                                    std::string input;
+                                    std::cout << "Möchten Sie eine Aufgabe hinzufügen? (Ja/Nein): ";
+                                    std::cin >> input;
+                                    if (input == "Ja" || input == "ja") {
+                                        Task task;
+                                        std::cout << "Beschreibung der Aufgabe: ";
+                                        std::cin.ignore();
+                                        std::getline(std::cin, task.description); // Eingabe der Aufgabenbeschreibung
+                                        task.completed = false;
+                                        tasks.push_back(task); // Hinzufügen der neuen Aufgabe zur Liste
+                                        std::cout << "Aufgabe hinzugefügt.\n";
+                                        saveTasksToFile(tasks, filename); // Speichern der aktualisierten Liste in die Datei
+                                    }
+                                    break;
+                                } else {
+                                    std::cout << "Ungültige Auswahl." << std::endl;
+                                }
+
+                                saveTasksToFile(tasks, filename); // Speichern der aktualisierten Liste in die Datei
+                            } else {
+                                std::cout << "Die Datei existiert nicht oder konnte nicht geöffnet werden." << std::endl;
+                            }
+                            break;
+                        }
+                        case '6': {
+                            std::string input;
+                            std::cout << "Bitte geben Sie den Namen der neuen Textdatei ein: ";
+                            std::cin >> input;
+
+                            std::string newFilename = directoryPath + "/" + input + ".txt";
+
+                            // Überprüfen, ob die Datei bereits existiert
+                            if (fs::exists(newFilename)) {
+                                std::cout << "Die Datei existiert bereits." << std::endl;
+                            } else {
+                                std::ofstream newFile(newFilename);
+                                if (newFile.is_open()) {
+                                    newFile.close();
+                                    std::cout << "Textdatei '" << input << "' wurde erstellt." << std::endl;
+                                } else {
+                                    std::cerr << "Fehler beim Erstellen der Textdatei." << std::endl;
+                                }
+                            }
+                            break;
+                        }
+                        /*case '7': {
+                            std::string input;
+                            std::cout << "Bitte geben Sie den Namen der Textdatei ein, die Sie löschen möchten: ";
+                            std::cin >> input;
+
+                            std::string deleteFilename = directoryPath + "/" + input;
+
+                            // Überprüfen, ob die Datei existiert und löschen
+                            if (fs::exists(deleteFilename)) {
+                                fs::remove(deleteFilename);
+                                std::cout << "Textdatei '" << input << "' wurde gelöscht." << std::endl;
+                            } else {
+                                std::cerr << "Die Datei existiert nicht oder konnte nicht gelöscht werden." << std::endl;
+                            }
+                            break;
+                        }*/
                     }
-                }
-                break;
-            }
-            //case '3': Löschen einer Aufgabe
-            case '3': {
-                showTasks(tasks); // Anzeigen der Aufgaben vor dem Entfernen
-                if (!tasks.empty()) {
-                    int index;
-                    std::cout << "Index der zu entfernenden Aufgabe: ";
-                    std::cin >> index;
-                    if (index >= 1 && index <= static_cast<int>(tasks.size())) {
-                        tasks.erase(tasks.begin() + index - 1); // Entfernen der ausgewählten Aufgabe
-                        std::cout << "Aufgabe entfernt.\n";
-                        saveTasksToFile(tasks, filename); // Speichern der aktualisierten Liste in die Datei
-                    } else {
-                        std::cout << "Ungültiger Index.\n"; // Fehlermeldung bei ungültigem Index
-                    }
-                }
-                break;
-            }
-            case '4': {
-                std::cout << "Programm wird beendet.\n";
-                break;
-            }
-            default: {
-                std::cout << "Ungültige Auswahl. Bitte erneut versuchen.\n"; // Fehlermeldung bei ungültiger Auswahl
+                } while (newChoice != '0'); // Schleife läuft, bis die Auswahl "0" (Zurück) getroffen wird.
                 break;
             }
         }
-    } while (choice != '4'); // Schleife läuft, bis die Auswahl '4' (Beenden) getroffen wird
+    } while (choice != '0'); // Schleife läuft, bis die Auswahl "0" (Beenden) getroffen wird.
+
+    saveTasksToFile(tasks, filename); // Speichern der Aufgaben beim Programmende
+}
+
+int main() {
+    std::string onedrivePath = "/Users/OneDrive-Persönlich/Notizen"; // Verzeichnis deines OneDrive-Ordners
+    processTasksInDirectory(onedrivePath); // Starte die Verarbeitung im Hauptverzeichnis
 
     return 0;
 }
